@@ -674,6 +674,7 @@ public class Controller implements Initializable {
 
             copy.flaggedProperty().addListener((obs, wasFlagged, isFlagged) -> {
                 if (isFlagged) {
+                    saveThisFlag(copy);
                     try {
                         Statement s = conn.createStatement();
                         String sql = "SELECT * FROM ORDERS WHERE TITLEID = " + copy.getId() + " AND ISSUE IS NOT NULL";
@@ -708,12 +709,14 @@ public class Controller implements Initializable {
                     }
                     this.unsaved = true;
                 }
-                if (!isFlagged && wasFlagged) this.unsaved = true;
+                if (!isFlagged && wasFlagged) {
+                    this.unsaved = true;
+                    unsaveThisFlag(copy);
+                }
             });
 
             titles.add(copy);
         }
-
         return titles;
     }
 
@@ -2497,6 +2500,7 @@ public class Controller implements Initializable {
                     } catch (SQLException sqlExcept) {
                         sqlExcept.printStackTrace();
                     }
+                    invalidateTitles();
                     titleTable.getItems().setAll(getTitles());
                     this.loadReportsTab();
                     getDatabaseInfo();
@@ -2582,6 +2586,60 @@ public class Controller implements Initializable {
         Log.LogMessage("Flags Saved");
     }
 
+    @FXML
+    void saveThisFlag(Title title)
+    {
+        ZonedDateTime startOfToday = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
+        long todayMillis = startOfToday.toEpochSecond() * 1000;
+        Date today = new Date(todayMillis);
+        PreparedStatement s = null;
+        String sql = """
+            UPDATE Titles
+            SET FLAGGED = TRUE, DATE_FLAGGED = ?, ISSUE_FLAGGED = ?
+            WHERE TITLEID = ?
+            """;
+        try {
+            s = conn.prepareStatement(sql);
+            s.setString(1, DateFormat.getDateInstance().format(today));
+            if (title.getIssueFlagged() == 0) {
+                s.setString(2, null);
+            } else {
+                s.setString(2, Integer.toString(title.getIssueFlagged()));
+            }
+            s.setString(3, Integer.toString(title.getId()));
+            s.executeUpdate();
+            s.close();
+        } catch (SQLException sqlExcept) {
+            sqlExcept.printStackTrace();
+        }
+        invalidateOrders();
+        loadReportsTab();
+        getDatabaseInfo();
+        System.out.println(title.getTitle() + " has been flagged and saved!");
+    }
+
+    @FXML
+    void unsaveThisFlag(Title title)
+    {
+        PreparedStatement s = null;
+        String sql = """
+                    UPDATE Titles
+                    SET FLAGGED = FALSE, ISSUE_FLAGGED = NULL
+                    WHERE TITLEID = ?
+                    """;
+        try {
+            s = conn.prepareStatement(sql);
+            s.setString(1, Integer.toString(title.getId()));
+            s.executeUpdate();
+            s.close();
+        } catch (SQLException sqlExcept) {
+            sqlExcept.printStackTrace();
+        }
+        invalidateOrders();
+        loadReportsTab();
+        getDatabaseInfo();
+        System.out.println(title.getTitle() + " has been UNflagged and saved!");
+    }
     @FXML
     void handleCustomerKeyboardInput(KeyEvent event)
     {

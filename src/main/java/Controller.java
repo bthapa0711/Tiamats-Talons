@@ -136,6 +136,7 @@ public class Controller implements Initializable {
     @FXML private Text RequestQuantityText;
     @FXML private Text RequestNumCustomersText;
 
+    @FXML private TabPane tabsPane;
     @FXML private TextArea databaseOverview;
 
     private ObservableList<Customer> storedCustomers;
@@ -296,22 +297,19 @@ public class Controller implements Initializable {
         int specialOrderNotes = 0;
         int issueNumberRequests = getNumIssueRequests();
         int titlesNotFlagged = 0;
-        int titlesNoRequests = 0;
+        int titlesNoRequests = getNumTitlesNoRequests();
 
         LocalDate sixMonthsAgo = LocalDate.now().minusMonths(6);
         for (Title title : titleTable.getItems()) {
-
             if (title.getNotes().compareTo("") != 0) {
                 specialOrderNotes++;
             }
+
             if (title.getDateFlagged() == null) {
                 titlesNotFlagged++;
             }
             else if (title.getDateFlagged().isBefore(sixMonthsAgo)) {
                 titlesNotFlagged++;
-            }
-            if (getNumberRequests(title.getId()) == 0) {
-                titlesNoRequests++;
             }
         }
 
@@ -538,7 +536,7 @@ public class Controller implements Initializable {
     /**
      * helper method to get the fourth piece of summary info on "new week pulls" tab: the number of titles with no customer requests
      */
-    private int getNumTitlesNoRequests() {
+    private int getNumTitlesFlaggedNoRequests() {
         int numTitlesWithNoRequests = 0;
 
         Statement s = null;
@@ -554,6 +552,39 @@ public class Controller implements Initializable {
                         ) AS FLAGGED_WITH_REQUESTS
                         RIGHT JOIN TITLES ON TITLES.TITLEID = FLAGGED_WITH_REQUESTS.TITLEID
                         WHERE FLAGGED_WITH_REQUESTS.TITLEID IS NULL AND FLAGGED = TRUE
+            """);
+
+            results.next();
+            numTitlesWithNoRequests = results.getInt(1);
+
+            results.close();
+            s.close();
+        }
+        catch (SQLException sqlExcept)
+        {
+            sqlExcept.printStackTrace();
+        }
+
+        return numTitlesWithNoRequests;
+    }
+
+    /**
+     * helper method to get the piece of summary info on "monthly breakdown" tab: the number of titles with no customer requests
+     */
+    private int getNumTitlesNoRequests() {
+        int numTitlesWithNoRequests = 0;
+
+        Statement s = null;
+        try
+        {
+            s = conn.createStatement();
+            ResultSet results = s.executeQuery("""
+                        SELECT COUNT(*) FROM (
+                                SELECT DISTINCT TITLEID
+                                FROM ORDERS
+                        ) AS TITLES_WITH_REQUESTS
+                        RIGHT JOIN TITLES ON TITLES.TITLEID = TITLES_WITH_REQUESTS.TITLEID
+                        WHERE TITLES_WITH_REQUESTS.TITLEID IS NULL
             """);
 
             results.next();
@@ -889,7 +920,7 @@ public class Controller implements Initializable {
         titleOrderIssueColumn.setCellValueFactory(new PropertyValueFactory<>("RequestIssue"));
 
         //Load the data for the Reports tab
-        this.loadReportsTab();
+
 
         //Add Listener for selected Customer
         customerTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -1061,7 +1092,15 @@ public class Controller implements Initializable {
             }
         });
 
-        getDatabaseInfo();
+        // add listener for selecting reports tab
+        tabsPane.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection.getText().equals("Reports"))
+            {
+                // Update New Weeks Pulls and Monthly Breakdown tabs
+                loadReportsTab();
+                getDatabaseInfo();
+            }
+        });
     }
 
     //#endregion
@@ -1100,7 +1139,6 @@ public class Controller implements Initializable {
                     invalidateCustomers();
                     customerTable.getItems().setAll(getCustomers());
                     this.loadReportsTab();
-                    getDatabaseInfo();
                 }
             });
 
@@ -1145,7 +1183,6 @@ public class Controller implements Initializable {
                         invalidateTitles();
                         titleTable.getItems().setAll(getTitles());
                         this.loadReportsTab();
-                        getDatabaseInfo();
                     }
                 });
 
@@ -1231,7 +1268,6 @@ public class Controller implements Initializable {
                 //     updateOrdersTable(customerTable.getSelectionModel().getSelectedItem());
                 // }
 
-                getDatabaseInfo();
                 this.loadReportsTab();
             }
         }
@@ -1304,7 +1340,6 @@ public class Controller implements Initializable {
                 titleOrdersTable.getItems().clear();
 
                 this.loadReportsTab();
-                getDatabaseInfo();
             }
         }
     }
@@ -1403,7 +1438,6 @@ public class Controller implements Initializable {
 
                 titleOrdersTable.getItems().clear();
 
-                getDatabaseInfo();
                 this.loadReportsTab();
             }
         }
@@ -1449,7 +1483,6 @@ public class Controller implements Initializable {
                         customerNotesText.setText("");
 
                         this.loadReportsTab();
-                        getDatabaseInfo();
                     }
                 });
                 window.show();
@@ -1497,7 +1530,6 @@ public class Controller implements Initializable {
                         invalidateOrders();
                         updateOrdersTable(customerTable.getSelectionModel().getSelectedItem());
                         this.loadReportsTab();
-                        getDatabaseInfo();
 
                         // titleTable.getItems().setAll(getTitles());
                     }
@@ -1554,7 +1586,6 @@ public class Controller implements Initializable {
                         titlePriceText.setText("");
                         titleNotesText.setText("");
                         this.loadReportsTab();
-                        getDatabaseInfo();
                     }
                 });
                 window.show();
@@ -1600,7 +1631,6 @@ public class Controller implements Initializable {
                         invalidateOrders();
                         updateOrdersTable(customerTable.getSelectionModel().getSelectedItem());
                         this.loadReportsTab();
-                        getDatabaseInfo();
 
                         if (titleTable.getSelectionModel().getSelectedItem() != null) {
                             Title title = titleTable.getSelectionModel().getSelectedItem();
@@ -2503,7 +2533,6 @@ public class Controller implements Initializable {
                     invalidateTitles();
                     titleTable.getItems().setAll(getTitles());
                     this.loadReportsTab();
-                    getDatabaseInfo();
                 });
         this.unsaved = false;
 
@@ -2581,7 +2610,6 @@ public class Controller implements Initializable {
         invalidateTitles();
         titleTable.getItems().setAll(getTitles());
         this.loadReportsTab();
-        getDatabaseInfo();
 
         Log.LogMessage("Flags Saved");
     }
@@ -3066,7 +3094,7 @@ public class Controller implements Initializable {
         FlaggedTitlesTotalText.setText(Integer.toString(this.getNumTitlesCurrentlyFlagged()));
         FlaggedTitlesTotalCustomersText.setText(Integer.toString((this.getNumCustomers())));
         FlaggedIssueNumbersText.setText(Integer.toString(this.getNumFlaggedWithIssueNumbers()));
-        FlaggedNoRequestsText.setText(Integer.toString(getNumTitlesNoRequests()));
+        FlaggedNoRequestsText.setText(Integer.toString(getNumTitlesFlaggedNoRequests()));
 
         flaggedTable.getItems().setAll(this.getFlaggedTitles());
     }

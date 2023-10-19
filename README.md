@@ -5,7 +5,22 @@ Capstone Project UNO 2022
 
 The DragonSlayer program is used to maintain a comic book store Pull List. Customer's can be added through the customer tab, titles throught the title tab, and reports and data analytics can be viewed through the reports tab.
 
+# Branches
+
+**main branch:** 
+- This is the branch to hold live data and without bugs and will be the branch used for releases.
+  
+**dev branch:**
+- This is the branch used for development and holds the current updates to be tested by the group.
+  - Updated 9/28/2023 with the fix for inconsistent search and a testing framework for customers, titles, and orders
+
 # Release Notes
+
+**RELEASE NOTES 2.01a (TBD)**
+- Will be updated after release
+
+  
+
 **RELEASE NOTES 1.01d (12.10.2022)**
 
 -Added ability to mark and track delinquent customers.

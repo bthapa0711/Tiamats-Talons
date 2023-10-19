@@ -5,6 +5,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.MouseButton;
@@ -37,7 +38,7 @@ public class StepDefinitions extends ApplicationTest {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("sample.fxml"));
         fxmlLoader.load();
         controller = fxmlLoader.getController();
-        //controller.emptyDB();
+        controller.emptyDB();
     }
 
     @After
@@ -421,7 +422,7 @@ public class StepDefinitions extends ApplicationTest {
 
     //#endregion
 
-    //#region Order Function
+    //#region Order Functions
 
     @Given("Request Table for title: {string}")
     public void request_table_for_title(String title, DataTable args) throws SQLException
@@ -537,6 +538,73 @@ public class StepDefinitions extends ApplicationTest {
 
     //#endregion
 
+    //#region Report Functions
+    @When("I click on the Reports tab")
+    public void i_click_on_the_reports_tab() throws InterruptedException {
+        clickOn("Reports");
+        TimeUnit.MILLISECONDS.sleep(10);
+    }
+
+    @When("I click on the New Week Pulls tab")
+    public void i_click_on_the_new_week_pulls_tab()
+    {
+        clickOn("New Week Pulls");
+    }
+
+    @When("I click on the Monthly Breakdown tab")
+    public void i_click_on_the_monthly_breakdown_tab()
+    {
+        clickOn("Monthly Breakdown");
+    }
+
+    @Then("I should see New Week Pulls$")
+    public void i_should_see_new_week_pulls(DataTable args)
+    {
+        List<String> columns = args.row(1);
+        String flaggedTitlesTotal = columns.get(0);
+        String flaggedTitlesTotalCustomers = columns.get(1);
+        String flaggedIssueNumbers = columns.get(2);
+        String flaggedNoRequests = columns.get(3);
+
+        String actualFlaggedTitlesTotal  = lookup("#FlaggedTitlesTotalText").queryText().getText();
+        String actualFlaggedTotalCustomers = lookup("#FlaggedTitlesTotalCustomersText").queryText().getText();
+        String actualFlaggedIssueNumbers = lookup("#FlaggedIssueNumbersText").queryText().getText();
+        String actualFlaggedNoRequests = lookup("#FlaggedNoRequestsText").queryText().getText();
+
+        assertEquals(flaggedTitlesTotal, actualFlaggedTitlesTotal);
+        assertEquals(flaggedTitlesTotalCustomers, actualFlaggedTotalCustomers);
+        assertEquals(flaggedIssueNumbers, actualFlaggedIssueNumbers);
+        assertEquals(flaggedNoRequests, actualFlaggedNoRequests);
+    }
+
+    @Then("I should see Monthly Breakdown$")
+    public void i_should_see_monthly_breakdown(DataTable args)
+    {
+        List<String> columns = args.row(1);
+        String numTitles = columns.get(0);
+        String numCustomers = columns.get(1);
+        String specialOrderNotes = columns.get(2);
+        String issueNumberRequests = columns.get(3);
+        String titlesNotFlagged = columns.get(4);
+        String titlesNoRequests = columns.get(5);
+        String breakdown = String.format("""
+                Database currently has:
+                   %s Titles
+                   %s Customers
+                   %s Special Order Notes
+                   %s Pending Issue # Requests
+                   %s Titles have not been flagged for over six months
+                   %s Titles have 0 Customer Requests
+                """, numTitles, numCustomers, specialOrderNotes, issueNumberRequests, titlesNotFlagged, titlesNoRequests);
+        breakdown = "[" + breakdown.replaceAll("[\\t\\n\\r]+",", ") + "]";
+
+        // Currently formatting between exp and act are wrong, one uses new line other commas plus surrounding bracketsg
+        TextArea  text = (TextArea) lookup("#databaseOverview").query().accessibleTextProperty().getBean();
+        String actualBreakdown = text.getParagraphs().toString();
+        assertEquals(breakdown, actualBreakdown);
+    }
+    //#endregion
+
     private ArrayList<Customer> createCustomerList(DataTable t)
     {
         ArrayList<Customer> customers = new ArrayList<>();
@@ -564,7 +632,7 @@ public class StepDefinitions extends ApplicationTest {
             String productId = Objects.toString(columns.get(1), "");
             int id = 0;
             LocalDate date = LocalDate.now();
-            if (columns.size() == 6)
+            if (columns.size() >= 6)
             {
                 id = Integer.parseInt(columns.get(4));
                 date = columns.get(5) == null ? null : LocalDate.parse(columns.get(5), DateTimeFormatter.ofPattern("MM/dd/yyyy"));

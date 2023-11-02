@@ -1157,15 +1157,9 @@ public class Controller implements Initializable {
      */
     @FXML
     void handleAddTitle(ActionEvent event) {
-        if (unsaved)
-        {
-            AlertBox.display("Flags Have Not Been Saved", "Please save or reset flags before adding a title.");
-        }
-        else
-        {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("NewTitleBox.fxml"));
-                Parent root = fxmlLoader.load();
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("NewTitleBox.fxml"));
+            Parent root = fxmlLoader.load();
 
                 NewTitleController newTitleController = fxmlLoader.getController();
                 newTitleController.setConnection(Controller.conn);
@@ -1191,7 +1185,6 @@ public class Controller implements Initializable {
                 System.out.println("Error when opening window. This is probably a bug");
                 e.printStackTrace();
             }
-        }
     }
 
     /**

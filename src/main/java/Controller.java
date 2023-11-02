@@ -2479,7 +2479,7 @@ public class Controller implements Initializable {
             LocalDate sixMonthsAgo = LocalDate.now().minusMonths(6);
             int i = 4;
             for (Title title : titles) {
-                if (title.getDateFlagged() == null || title.getDateFlagged().isBefore(sixMonthsAgo)) {
+                if((title.getDateFlagged() == null || title.getDateFlagged().isBefore(sixMonthsAgo)) && !(title.getDateCreated() != null && title.getDateCreated().isAfter(sixMonthsAgo))){
                     row = sheet.createRow(i);
 
                     cell = row.createCell(0);

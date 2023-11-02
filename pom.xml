@@ -49,14 +49,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>5.2.2</version>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>7.13.0</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>5.2.2</version>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>7.13.0</version>
+            <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.testfx/testfx-junit -->
         <dependency>

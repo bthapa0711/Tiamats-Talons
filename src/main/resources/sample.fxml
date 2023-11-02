@@ -291,6 +291,11 @@
                                                           <Font size="12.0" />
                                                       </font>
                                                   </Button>
+                                           <Button fx:id="idx" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#handleExportFlaggedTitles" prefHeight="44.0" prefWidth="192.0" text="Export Unflagged 6 months" textAlignment="CENTER" wrapText="true">
+                                               <font>
+                                                   <Font size="12.0" />
+                                               </font>
+                                           </Button>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="*Titles with 0 Customer Requests will be ignored" wrappingWidth="150.0">
                                              <font>
                                                 <Font size="11.0" />

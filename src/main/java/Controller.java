@@ -1119,41 +1119,34 @@ public class Controller implements Initializable {
      */
     @FXML
     void handleAddTitle(ActionEvent event) {
-        if (unsaved)
-        {
-            AlertBox.display("Flags Have Not Been Saved", "Please save or reset flags before adding a title.");
-        }
-        else 
-        {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("NewTitleBox.fxml"));
-                Parent root = fxmlLoader.load();
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("NewTitleBox.fxml"));
+            Parent root = fxmlLoader.load();
 
-                NewTitleController newTitleController = fxmlLoader.getController();
-                newTitleController.setConnection(Controller.conn);
+            NewTitleController newTitleController = fxmlLoader.getController();
+            newTitleController.setConnection(Controller.conn);
 
-                Stage window = new Stage();
-                window.initModality(Modality.APPLICATION_MODAL);
-                window.setTitle("Add Title");
-                window.setResizable(false);
-                window.setHeight(285);
-                window.setWidth(400);
-                window.setScene(new Scene(root));
-                window.setOnHidden( e -> {
-                    if (newTitleController.titleWasAdded)
-                    {
-                        invalidateTitles();
-                        titleTable.getItems().setAll(getTitles());
-                        this.loadReportsTab();
-                        getDatabaseInfo();
-                    }
-                });
+            Stage window = new Stage();
+            window.initModality(Modality.APPLICATION_MODAL);
+            window.setTitle("Add Title");
+            window.setResizable(false);
+            window.setHeight(285);
+            window.setWidth(400);
+            window.setScene(new Scene(root));
+            window.setOnHidden( e -> {
+                if (newTitleController.titleWasAdded)
+                {
+                    invalidateTitles();
+                    titleTable.getItems().setAll(getTitles());
+                    this.loadReportsTab();
+                    getDatabaseInfo();
+                }
+            });
 
-                window.show();
-            } catch (Exception e) {
-                System.out.println("Error when opening window. This is probably a bug");
-                e.printStackTrace();
-            }
+            window.show();
+        } catch (Exception e) {
+            System.out.println("Error when opening window. This is probably a bug");
+            e.printStackTrace();
         }
     }
 
@@ -1320,10 +1313,6 @@ public class Controller implements Initializable {
 
         if (titleTable.getSelectionModel().getSelectedItems() == null) {
             AlertBox.display("Confirm Delete", "Please select a title.");
-        }
-        else if (unsaved)
-        {
-            AlertBox.display("Flags Have Not Been Saved", "Please save or reset flags before deleting a title.");
         }
         else {
             ObservableList<Title> selectedTitles = titleTable.getSelectionModel().getSelectedItems();
@@ -1522,10 +1511,6 @@ public class Controller implements Initializable {
     void handleEditTitle(ActionEvent event) {
         if (titleTable.getSelectionModel().getSelectedItem() == null) {
             AlertBox.display("Confirm Edit", "Please select a title.");
-        }
-        else if (unsaved)
-        {
-            AlertBox.display("Flags Have Not Been Saved", "Please save or reset flags before editing a title.");
         }
         else {
             try {
@@ -2609,12 +2594,16 @@ public class Controller implements Initializable {
             s.setString(3, Integer.toString(title.getId()));
             s.executeUpdate();
             s.close();
+
         } catch (SQLException sqlExcept) {
             sqlExcept.printStackTrace();
         }
-        invalidateOrders();
-        loadReportsTab();
+
+        invalidateTitles();
+        titleTable.getItems().setAll(getTitles());
+        this.loadReportsTab();
         getDatabaseInfo();
+        this.unsaved = false;
         System.out.println(title.getTitle() + " has been flagged and saved!");
     }
 
@@ -2632,12 +2621,15 @@ public class Controller implements Initializable {
             s.setString(1, Integer.toString(title.getId()));
             s.executeUpdate();
             s.close();
+
         } catch (SQLException sqlExcept) {
             sqlExcept.printStackTrace();
         }
-        invalidateOrders();
-        loadReportsTab();
+        invalidateTitles();
+        titleTable.getItems().setAll(getTitles());
+        this.loadReportsTab();
         getDatabaseInfo();
+        this.unsaved = false;
         System.out.println(title.getTitle() + " has been UNflagged and saved!");
     }
     @FXML

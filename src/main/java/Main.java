@@ -3,6 +3,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 /**
@@ -13,6 +14,8 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
     Stage window;
+    private static String keyword;
+    private Controller controller;
 
     public static void main(String[] args) {
         launch(args);
@@ -28,10 +31,14 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("sample.fxml"));
         Parent root = fxmlLoader.load();
-        Controller controller = fxmlLoader.getController();
+        controller = fxmlLoader.getController();
         window = primaryStage;
 
         Scene scene = new Scene(root, 1200, 700);
+
+        //Bibash sets an event handler that responds to key typing events within the scene
+        keyword = "";
+        scene.setOnKeyTyped(this::handleKeyTyped);
 
         window.setTitle("Dragon's Lair Pull List");
         //Add handler for closing the window with unsaved flags
@@ -52,5 +59,21 @@ public class Main extends Application {
         window.setMinHeight(700);
         window.setMinWidth(1200);
         window.show();
+    }
+
+    //Bibash
+    private void handleKeyTyped(KeyEvent event) {
+        char typedChar = event.getCharacter().charAt(0);
+        keyword += typedChar;
+        System.out.println(keyword);
+        if (controller.currentPage == Controller.CURRENT_PAGE.CUSTOMER && controller.getSelectedCustomer() != null)
+            controller.handleCustomerJumping(keyword);
+        if (controller.currentPage == Controller.CURRENT_PAGE.TITLE && controller.getSelectedTitle() != null)
+            controller.handleTitleJumping(keyword);
+    }
+
+
+    public static void clearKeyword() {
+        keyword = "";
     }
 }

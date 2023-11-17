@@ -19,6 +19,7 @@ public class Title {
     private BooleanProperty flagged;
     private LocalDate dateFlagged;
     private int issueFlagged;
+    private boolean noRequest;
 
     /**
      * Constructor. Creates a Title with the specified properties
@@ -221,6 +222,10 @@ public class Title {
      * @param issueFlagged the issue to flag for this title
      */
     public void setIssueFlagged(int issueFlagged) { this.issueFlagged = issueFlagged; }
+
+    public void setNoRequest(boolean noRequest) { this.noRequest = noRequest; }
+
+    public boolean getNoRequest() {return this.noRequest; }
 
     public boolean equals(Title t)
     {

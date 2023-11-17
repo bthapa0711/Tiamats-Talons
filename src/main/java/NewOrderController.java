@@ -24,7 +24,7 @@ import java.util.ResourceBundle;
 public class NewOrderController implements Initializable{
 
     public boolean orderWasAdded = false;
-
+    public int lastTitleAdded;
     private Connection conn;
     private int customerId;
 
@@ -121,6 +121,7 @@ public class NewOrderController implements Initializable{
                 s.close();
 
                 orderWasAdded = true;
+                lastTitleAdded = titleID;
                 Log.LogEvent("New Order", "Added order - CustomerID: " + customerId + " - Title: " + FxUtilTest.getComboBoxValue(setTitle) + " - Quantity: " + quantity + " - Issue: " + (issue == null ? null : Integer.valueOf(issue)));
             } catch (SQLException sqlExcept) {
                 sqlExcept.printStackTrace();

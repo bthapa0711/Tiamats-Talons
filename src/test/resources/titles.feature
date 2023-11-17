@@ -150,3 +150,70 @@ Feature: Titles
     Then I should see titles
       | Title     | Product Id  | Price   | Notes     |
 
+  Scenario: Sorting Titles Incasesensitive
+    When I click on Titles tab
+    When I add titles
+      | Title     | Product Id  | Price   | Notes     |
+      | AB        | 1           | 10      |           |
+      | bA        | 3           | 10      |           |
+      | ac        | 2           | 10      |           |
+      | bC        | 5           | 10      |           |
+      | BB        | 4           | 10      |           |
+    Then I should see titles
+      | Title     | Product Id  | Price   | Notes     |
+      | AB        | 1           | 10      |           |
+      | ac        | 2           | 10      |           |
+      | bA        | 3           | 10      |           |
+      | BB        | 4           | 10      |           |
+      | bC        | 5           | 10      |           |
+    When I add titles
+      | Title     | Product Id  | Price   | Notes     |
+      | aa        | 0           | 10      |           |
+    Then I should see titles
+      | Title     | Product Id  | Price   | Notes     |
+      | aa        | 0           | 10      |           |
+      | AB        | 1           | 10      |           |
+      | ac        | 2           | 10      |           |
+      | bA        | 3           | 10      |           |
+      | BB        | 4           | 10      |           |
+      | bC        | 5           | 10      |           |
+    When I delete titles
+      | Title     | Product Id  | Price   | Notes     |
+      | aa        | 0           | 10      |           |
+      | AB        | 1           | 10      |           |
+      | ac        | 2           | 10      |           |
+      | bA        | 3           | 10      |           |
+      | BB        | 4           | 10      |           |
+      | bC        | 5           | 10      |           |
+    Then I should see titles
+      | Title     | Product Id  | Price   | Notes     |
+
+  Scenario: Search by Product Id
+    When I click on Titles tab
+    When I add titles
+      | Title     | Product Id  | Price      | Notes     |
+      | Superman  | 10          | 12.00      |           |
+      | Batman    | 11          | 13.50      |           |
+      | Joker     | 13          | 10.25      |           |
+    Then I should see titles
+      | Title     | Product Id  | Price      | Notes     |
+      | Batman    | 11          | 13.50      |           |
+      | Joker     | 13          | 10.25      |           |
+      | Superman  | 10          | 12.00      |           |
+    When I search titles: "11"
+    Then I should only see titles
+      | Title     | Product Id  | Price      | Notes     |
+      | Batman    | 11          | 13.50      |           |
+    When I delete titles
+      | Title     | Product Id  | Price      | Notes     |
+      | Batman    | 11          | 13.50      |           |
+    Then I should see titles
+      | Title     | Product Id  | Price   | Notes     |
+      | Joker     | 13          | 10.25      |           |
+      | Superman  | 10          | 12.00      |           |
+    When I delete titles
+      | Title     | Product Id  | Price      | Notes     |
+      | Joker     | 13          | 10.25      |           |
+      | Superman  | 10          | 12.00      |           |
+    Then I should see titles
+      | Title     | Product Id  | Price   | Notes     |
